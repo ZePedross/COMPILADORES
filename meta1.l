@@ -1,7 +1,9 @@
 %{
     /* place here any C variables and definitions */
-    /*Sou porreiro*/
 
+    /*receba*/
+    /*Ola*/
+    
     #include <stdio.h>
     #include <ctype.h>
 
