@@ -1,6 +1,6 @@
 %{
     /* place here any C variables and definitions */
-
+    /*Ola*/
     #include <stdio.h>
     #include <ctype.h>
 
