@@ -1,5 +1,6 @@
 %{
     /* place here any C variables and definitions */
+    /*receba*/
 
     #include <stdio.h>
     #include <ctype.h>
