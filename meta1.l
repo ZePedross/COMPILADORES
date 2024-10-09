@@ -1,11 +1,8 @@
 %{
     /* place here any C variables and definitions */
-<<<<<<< HEAD
     /*receba*/
-
-=======
     /*Ola*/
->>>>>>> ZePedross
+    
     #include <stdio.h>
     #include <ctype.h>
 
