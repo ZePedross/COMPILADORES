@@ -17,7 +17,6 @@
     }
 
 
-
 %}
 digit   [0-9]
 digit_octal [0-7]
@@ -53,7 +52,7 @@ ignore " "|\t|\n
 
 {KW}                            { printf("%s\n", yytext); column += yyleng;}
 {ignore}+                       { if (*yytext == '\n') { row++; column = 1; } else {column += yyleng;}}
-[-|+]?({digit})*"."{digit}+([eE][+|-]?{digit}+)?     { printf("DECIMAL(%s)\n", yytext); column += yyleng; }
+[-|+]?({digit})*"."{digit}+([eE][+|-]?{digit}+)?     { printf("DECIMAL(%s)\n", yytext); column += yyleng;}
 "-"                             { printf("MINUS\n"); column += yyleng;}
 "+"                             { printf("PLUS\n"); column += yyleng;}
 "*"                             { printf("STAR\n"); column += yyleng;}
