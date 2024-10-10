@@ -1,6 +1,5 @@
 %{
     /* place here any C variables and definitions */
-
     #include <stdio.h>
     #include <ctype.h>
     #include <string.h>
@@ -30,6 +29,7 @@ ignore " "|\t|\n
 
 %X STRING
 %X COMMENT
+%X COMMENT2
 %%
 
 "/*"                            { BEGIN(COMMENT); printf("Coment:"); column += yyleng; } /* indica que vai comçar um comentário*/
@@ -37,6 +37,10 @@ ignore " "|\t|\n
 <COMMENT>\n                     { row++; column = 1; }
 <COMMENT><<EOF>>                { printf("Line <%d>, column <%d>: unterminated comment\n",row,column); BEGIN(INITIAL);}
 <COMMENT>"*/"                   { BEGIN(INITIAL); printf("\n") ;column += yyleng; } /* indica que o comentário terminou */
+
+"//"                            { BEGIN(COMMENT2); printf("Coment:"); column += yyleng; }
+<COMMENT2>.                     { printf("%s",yytext); column += yyleng; }
+<COMMENT2>"\n"                  { column++; BEGIN(INITIAL); printf("\n") ;}
 
 "\""                            { BEGIN(STRING); strcpy(string,""); column += yyleng; }
 <STRING>\n                      { printf("Line <%d>, column <%d>: unterminated string\n",row,column); BEGIN(INITIAL);}
