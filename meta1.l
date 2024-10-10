@@ -1,14 +1,13 @@
 %{
     /* place here any C variables and definitions */
-
-    /*receba*/
-    /*Ola*/
-    
     #include <stdio.h>
     #include <ctype.h>
+    #include <string.h>
 
     int row = 1;
     int column = 1;
+
+    char string[1024];
 
     void toUpper(char *s) {
         while (*s) {
@@ -29,16 +28,29 @@ ignore " "|\t|\n
 
 
 %X STRING
+%X COMMENT
+%X COMMENT2
 %%
 
-"\""                            { BEGIN(STRING); printf("STRLIT(\""); column += yyleng; }
-<STRING>[a-zA-Z0-9]             { printf("%s",yytext); column += yyleng; }
-<STRING>\n                      { printf("\\n"); row++; column = 1; }
-<STRING>\t                      { printf("\\t"); column += yyleng; }
-<STRING>\f                      { printf("\\f"); column += yyleng; }
-<STRING>\r                      { printf("\\r"); column += yyleng; }
-<STRING>\\.                     { printf("Line %d, column %d: invalid escape sequence (%s)\n",row,column,yytext); column += yyleng; }
-<STRING>"\""                    { BEGIN(INITIAL); printf("\")\n"); column += yyleng; }
+"/*"                            { BEGIN(COMMENT); printf("Coment:"); column += yyleng; } /* indica que vai comçar um comentário*/
+<COMMENT>.                      { printf("%s",yytext); column += yyleng; }
+<COMMENT>\n                     { row++; column = 1; }
+<COMMENT><<EOF>>                { printf("Line <%d>, column <%d>: unterminated comment\n",row,column); BEGIN(INITIAL);}
+<COMMENT>"*/"                   { BEGIN(INITIAL); printf("\n") ;column += yyleng; } /* indica que o comentário terminou */
+
+"//"                            { BEGIN(COMMENT2); printf("Coment:"); column += yyleng; }
+<COMMENT2>.                     { printf("%s",yytext); column += yyleng; }
+<COMMENT2>"\n"                  { column++; BEGIN(INITIAL); printf("\n") ;}
+
+"\""                            { BEGIN(STRING); strcpy(string,""); column += yyleng; }
+<STRING><<EOF>>                 { printf("Line <%d>, column <%d>: unterminated string\n",row,column); BEGIN(INITIAL);}
+<STRING>[a-zA-Z0-9]             { strcat(string, yytext); column += yyleng; }
+<STRING>\n                      { strcat(string,"\\n"); row++; column = 1; }
+<STRING>\t                      { strcat(string,"\\t"); column += yyleng; }
+<STRING>\f                      { strcat(string,"\\f"); column += yyleng; }
+<STRING>\r                      { strcat(string,"\\r"); column += yyleng; }
+<STRING>\\.                     { printf("Line <%d>, column <%d>: invalid escape sequence <%s>\n",row,column,yytext); column += yyleng; }
+<STRING>"\""                    { BEGIN(INITIAL); printf("STRLIT(%s)\n",string); column += yyleng; }
 
 {KW}                            { printf("%s\n", yytext); column += yyleng;}
 {ignore}+                       { if (*yytext == '\n') { row++; column = 1; } else {column += yyleng;}}
@@ -81,12 +93,13 @@ ignore " "|\t|\n
 "strconv.Atoi"                  { printf("PARSEINT\n"); column += yyleng;}
 "func"                          { printf("FUNC\n"); column += yyleng;}
 "os.Args"                       { printf("CMDARGS\n"); column += yyleng;}
-0{digit_octal}+                 { printf("OCTAL(%s)\n", yytext); column += yyleng; }
-0([8|9]|{letter})+              { printf("Line (%i), column (%i): invalid octal constant (%s)\n", row,column,yytext); column += yyleng; }
 0.*[xX]({digit}|{hex_letter})+  { printf("HEXADECIMAL(%s)\n", yytext); column += yyleng; }
+0.*[xX]([[g-zG-Z])*             { printf("Line <%i>, column <%i>: invalid hexadecimal constant <%s>\n", row,column,yytext); column += yyleng; }
+0{digit_octal}+                 { printf("OCTAL(%s)\n", yytext); column += yyleng; }
+0([8|9]|{letter})+              { printf("Line <%i>, column <%i>: invalid octal constant <%s>\n", row,column,yytext); column += yyleng; }
 {digit}+                        { printf("NATURAL(%s)\n", yytext); column += yyleng; }
 {letter}({letter}|{digit}|"_")* { printf("IDENTIFIER(%s)\n", yytext); column += yyleng; }
-.                               { printf("Line (%i), column (%i): illegal character (%s)\n", row,column,yytext);column += yyleng; }
+.                               { printf("Line <%i>, column <%i>: illegal character <%s>\n", row,column,yytext);column += yyleng; }
 
 %%
 extern int yylex();
