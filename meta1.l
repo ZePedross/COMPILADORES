@@ -39,14 +39,13 @@ ignore " "|\t|\n
 <COMMENT>"*/"                   { BEGIN(INITIAL); printf("\n") ;column += yyleng; } /* indica que o comentário terminou */
 
 "\""                            { BEGIN(STRING); strcpy(string,""); column += yyleng; }
-<STRING><<EOF>>                 { printf("Line <%d>, column <%d>: unterminated string\n",row,column); BEGIN(INITIAL);}
+<STRING>\n                      { printf("Line <%d>, column <%d>: unterminated string\n",row,column); BEGIN(INITIAL);}
 <STRING>[a-zA-Z0-9]             { strcat(string, yytext); column += yyleng; }
-<STRING>\n                      { strcat(string,"\\n"); row++; column = 1; }
-<STRING>\t                      { strcat(string,"\\t"); column += yyleng; }
-<STRING>\f                      { strcat(string,"\\f"); column += yyleng; }
-<STRING>\r                      { strcat(string,"\\r"); column += yyleng; }
+<STRING>\\n                     { strcat(string,"\\n"); row++; column = 1; }
+<STRING>\\[tfr]                 { strcat(string,yytext); column += yyleng; }
 <STRING>\\.                     { printf("Line <%d>, column <%d>: invalid escape sequence <%s>\n",row,column,yytext); column += yyleng; }
 <STRING>"\""                    { BEGIN(INITIAL); printf("STRLIT(%s)\n",string); column += yyleng; }
+
 
 {KW}                            { printf("%s\n", yytext); column += yyleng;}
 {ignore}+                       { if (*yytext == '\n') { row++; column = 1; } else {column += yyleng;}}
